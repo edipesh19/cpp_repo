@@ -7,6 +7,11 @@ class base
 	public:
 		virtual void fun() = 0;
 };
+// definition of pure virtual function -- NO Error
+void base::fun()
+{
+	cout<<"Base\n";
+}
 
 class der1:public base
 {
@@ -29,5 +34,7 @@ int main()
 {
 	base *bptr = new der2();
 	bptr->fun();
+	//This is the way to call
+	bptr->base::fun();
 	return 0;
 }
