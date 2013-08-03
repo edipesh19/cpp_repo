@@ -1,0 +1,36 @@
+1. type-safe linkage
+=====================
+Consider the following scenario. In one file is the definition for a
+function:
+//: C07:Def.cpp {O}
+// Function definition
+void f(int) {}
+///:~
+In the second file, the function is misdeclared and then called:
+//: C07:Use.cpp
+//{L} Def
+// Function misdeclaration
+void f(char);
+int main() {
+//! f(1); // Causes a linker error
+} ///:~
+Even though you can see that the function is actually f(int), the
+compiler doesn’t know this because it was told – through an
+explicit declaration – that the function is f(char). Thus, the
+compilation is successful. In C, the linker would also be successful,
+but not in C++.
+
+So in C the bug arise because o these kind of issue is dificult to find but in C++
+this will be a linked error.
+
+2. union
+========
+Union can not be used as base class.
+
+3. placement holder argument
+============================
+void f(int x, int = 0, float = 1.1);
+In C++ you don’t need identifiers in the function definition, either:
+void f(int x, int, float flt) { /* ... */ }
+Function calls must still
+Function call must still provide a value for the placeholder, though: f(1) or f(1,2,3.0).

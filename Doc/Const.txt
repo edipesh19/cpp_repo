@@ -1,0 +1,207 @@
+const
+=====
+Better to use const instead o #define
+const is by deault to internal linkage so consts are stored in symbol table and fold that into code. no memory are allocated for these.
+const is compile time constant.
+Memory will not be allocated until extern or address of operator(&) is used to get the address of const.
+Here is the example.
+
+File 1.cpp
+-----------
+const int j = 100;
+const int *ptr = &j; // Memory allocated
+
+File 2.cpp
+----------
+extern int j; // Memory allocated
+
+Aggregate
+==========
+It is also possible to use the const in aggregate/big variables.
+But compiler is not that much sophisticated to hold such a big thing into its symbol table.
+So memory  is allocated. So in this case const means “a piece of storage that cannot be
+changed.”
+However, the value cannot be used at compile time
+because the compiler is not required to know the contents of the
+storage at compile time.
+
+const int i[] = { 1, 2, 3, 4 };
+//! float f[i[3]]; // Illegal
+
+Const pointer
+=============
+const int* const x = &d; // (1)
+int const* const x2 = &d; // (2)
+1 and 2 both are same
+
+int const* v;       //(1)
+int* const w = &d; // (2)
+1 and 2 both are same
+
+Temporaries are automatically const
+====================================
+class X {
+int i;
+public:
+X(int ii = 0);
+void modify();
+};
+X::X(int ii) { i = ii; }
+void X::modify() { i++; }
+X f5() {
+return X();
+}
+const X f6() {
+return X();
+}
+void f7(X& x) { // Pass by non-const reference
+x.modify();
+}
+int main() {
+f5() = X(1); // OK -- non-const return value
+f5().modify(); // OK
+// Causes compile-time errors:
+//! f7(f5()); // Temporary object is created which are auto matically const.
+//! f6() = X(1);
+//! f6().modify();
+//! f7(f6());
+} ///:~
+
+encapsulating built-in type in a class
+=======================================
+It’s often useful to encapsulate a built-in type inside a class to
+guarantee initialization with the constructor. For example, here’s an
+Integer class:
+class Integer {
+int i;
+public:
+Integer(int ii = 0);
+void print();
+};
+Integer::Integer(int ii) : i(ii) {}
+void Integer::print() { cout << i << ' '; }
+int main() {
+Integer i[100];
+for(int j = 0; j < 100; j++)
+i[j].print();
+}
+
+Compile time constanr inside class
+===================================
+class stack{
+............
+............
+static const int size = 100; // using const
+--------- OR -------------------
+enum { size = 100 };  // using enum hack
+............
+............
+};
+
+Getter and setter
+=================
+class Integer{
+int i;
+public:
+.....
+.....
+int getVal()const;
+void setVal(const int);
+...........
+..........
+};
+
+int Integer::getVal()const
+{
+	return i;
+}
+void Integer::setVal(const int x)
+{
+	i = x;
+}
+
+Mutable and remove constness
+============================
+
+class Y {
+int i;
+public:
+Y();
+void f() const;
+};
+Y::Y() { i = 0; }
+void Y::f() const {
+//! i++; // Error -- const member function
+((Y*)this)->i++; // OK: cast away const-ness
+// Better: use C++ explicit cast syntax:
+(const_cast<Y*>(this))->i++;
+}
+int main() {
+const Y yy;
+yy.f(); // Actually changes it!
+} ///:~
+
+This approach works and you’ll see it used in legacy code, but it is
+not the preferred technique. The problem is that this lack of
+constness is hidden away in a member function definition, and you
+have no clue from the class interface that the data of the object is
+actually being modified unless you have access to the source code
+(and you must suspect that constness is being cast away, and look
+for the cast). To put everything out in the open, you should use the
+mutable keyword in the class declaration to specify that a
+particular data member may be changed inside a const object:
+
+class Z {
+int i;
+mutable int j;
+public:
+Z();
+void f() const;
+};
+Z::Z() : i(0), j(0) {}
+void Z::f() const {
+//! i++; // Error -- const member function
+j++; // OK: mutable
+}
+int main() {
+const Z zz;
+zz.f(); // Actually changes it!
+} ///:~
+
+
+Volatile
+==========
+As with const, you can use volatile for data members, member
+functions, and objects themselves. You can only call volatile
+member functions for volatile objects.
+
+class Comm {
+const volatile unsigned char byte;
+volatile unsigned char flag;
+enum { bufsize = 100 };
+unsigned char buf[bufsize];
+int index;
+public:
+Comm();
+void isr() volatile;
+char read(int index) const;
+};
+Comm::Comm() : index(0), byte(0), flag(0) {}
+// Only a demo; won't actually work
+// as an interrupt service routine:
+void Comm::isr() volatile {
+flag = 0;
+buf[index++] = byte;
+// Wrap to beginning of buffer:
+if(index >= bufsize) index = 0;
+}
+char Comm::read(int index) const {
+if(index < 0 || index >= bufsize)
+return 0;
+return buf[index];
+}
+int main() {
+volatile Comm Port;
+Port.isr(); // OK
+//! Port.read(0); // Error, read() not volatile
+} ///:~
