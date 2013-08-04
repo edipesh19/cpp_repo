@@ -1,0 +1,46 @@
+Reference
+=========
+int y;
+int& r = y;
+// When a reference is created, it must
+// be initialized to a live object.
+// However, you can also say:
+const int& q = 12; // (1)
+// References are tied to someone else's storage:
+int x = 0; // (2)
+int& a = x; // (3)
+int main() {
+cout << "x = " << x << ", a = " << a << endl;
+a++;
+cout << "x = " << x << ", a = " << a << endl;
+} ///:~
+
+1. A reference must be initialized when it is created
+2. Once a reference is initialized to an object, it cannot be changed to refer to another object.
+3.You cannot have NULL references.
+
+If you return a reference from a function, you must take the same care as if you return a pointer from a function.
+
+Operator overloading
+====================
+Integer::operator+ must produce an Integer object
+that is the sum of the operands. This object is returned by
+value as a const, so the result cannot be modified as an
+lvalue.
+All the assignment operators modify the lvalue. To allow the
+result of the assignment to be used in chained expressions,
+like a=b=c, it’s expected that you will return a reference to
+that same lvalue that was just modified.But should this
+reference be a const or nonconst? Although you read a=b=c
+from left to right, the compiler parses it from right to left, so
+you’re not forced to return a nonconst to support assignment
+chaining. However, people do sometimes expect to be able to
+perform an operation on the thing that was just assigned to,
+such as (a=b).func( ) ;to call func( ) on a after assigning b to
+it. Thus, the return value for all of the assignment operators
+should be a nonconst reference to the lvalue.
+
+The subscript, operator[ ], must be a member function and it
+requires a single argument
+
+
