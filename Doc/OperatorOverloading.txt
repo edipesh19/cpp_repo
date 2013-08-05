@@ -40,7 +40,7 @@ such as (a=b).func( ) ;to call func( ) on a after assigning b to
 it. Thus, the return value for all of the assignment operators
 should be a nonconst reference to the lvalue.
 
-The subscript, operator[ ], must be a member function and it
+The subscript, operator[ ] and operator->, must be a member function and it
 requires a single argument
 
 
